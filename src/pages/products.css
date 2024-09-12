@@ -1,0 +1,60 @@
+.flex{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+
+}
+
+/* Container for the product card */
+.product-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    max-width: 300px;
+    margin: 20px;
+}
+
+/* Hover effect */
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Product image */
+.product-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-width: 100%;
+}
+
+/* Container for product details */
+.product-details {
+    padding: 15px;
+}
+
+/* Product title */
+.product-title {
+    font-size: 1.2em;
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+/* Product description */
+.product-description {
+    font-size: 0.9em;
+    color: #777;
+    margin: 0 0 15px 0;
+    line-height: 1.4;
+}
+
+/* Product price */
+.product-price {
+    font-size: 1.1em;
+    color: #e74c3c;
+    font-weight: bold;
+}
+.btn{
+    display: block;
+}

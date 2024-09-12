@@ -1,0 +1,24 @@
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    /* Ensures the navbar stays on top */
+    /* background-color: #333; */
+    /* Optional */
+    /* padding: 10px 0; */
+    /* Optional */
+}
+.options{
+display: flex;
+gap: 10px;
+}
+
+.item{
+    display: inline-block;
+    margin-right: 10px;
+}
+.categories{
+    display: inline-block;
+    margin-right: 10px;
+    margin-right: 0;
+}
