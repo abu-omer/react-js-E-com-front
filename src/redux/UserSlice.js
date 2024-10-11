@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 export const loginUser = createAsyncThunk(
   "user/loginUser",
@@ -11,9 +12,47 @@ export const loginUser = createAsyncThunk(
     console.log(userCredintial);
     console.log("response", response.data);
     localStorage.setItem("user", JSON.stringify(response.data));
+    Cookies.set("refreshToken", JSON.stringify(response.data.refreshToken));
     const roles = response?.data?.roles;
     const accessToken = response?.data?.accessToken;
     return { roles, accessToken };
+  }
+);
+
+export const refreshLogin = createAsyncThunk(
+  "user/refresh",
+  async (_, { rejectWithValue }) => {
+    // const refreshToken = Cookies.get("refreshToken");
+    // console.log("local", refreshToken);
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/v1/auth/refresh",
+        {},
+        { withCredentials: true } // Ensure cookies are sent with the request
+      );
+
+      // Assuming the response contains the new accessToken
+      const { accessToken } = response.data;
+      console.log("accccesss", accessToken);
+
+      // Update localStorage or cookies with the new accessToken
+      localStorage.setItem("accessToken", accessToken); // Caution: LocalStorage can be vulnerable to XSS
+      Cookies.set("accessToken", accessToken); // Avoid regular cookies if you can use HttpOnly cookies
+
+      console.log("New access token:", accessToken);
+
+      // Return the refreshed token data
+      return response.data;
+    } catch (error) {
+      console.error("Token refresh failed", error);
+
+      // Optional: Clear tokens if refresh fails (indicating they are no longer valid)
+      localStorage.removeItem("accessToken");
+      Cookies.remove("accessToken");
+
+      // Use rejectWithValue to return a custom error message or handle unauthorized states
+      return rejectWithValue(error.response?.data || "Token refresh failed");
+    }
   }
 );
 export const logout = createAsyncThunk("user/logout", async () => {
@@ -44,6 +83,32 @@ export const userSlice = createSlice({
   initialState,
   extraReducers: (builder) => {
     builder
+      .addCase(refreshLogin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(refreshLogin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user.accessToken = action.payload;
+        state.error = null;
+        state.loggedin = true;
+        state.logout = false;
+        console.log("payload", state.user);
+      })
+      .addCase(refreshLogin.rejected, (state, action) => {
+        state.loading = false;
+        state.user = null;
+        state.loggedin = false;
+        state.logout = false;
+        state.error = "Session expired, please login again.";
+        console.log("payload", state.user);
+        console.log("error", state.error);
+
+        localStorage.removeItem("user");
+        Cookies.remove("user");
+        // window.location.href = "/login";
+      })
+
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.user = null;
@@ -60,10 +125,10 @@ export const userSlice = createSlice({
         console.log("payload", state.user);
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.loading = true;
+        state.loading = false;
         state.user = null;
         state.loggedin = false;
-        state.logout = false;
+        state.logout = true;
 
         console.log(action.error.message);
         if (action.error.message === "request faild with status code 401") {
@@ -72,6 +137,7 @@ export const userSlice = createSlice({
           state.error = action.error.message;
         }
       })
+
       .addCase(logout.pending, (state) => {
         state.loading = true;
       })
@@ -81,6 +147,8 @@ export const userSlice = createSlice({
         state.loggedin = false;
         state.logout = true;
         state.error = null;
+        localStorage.removeItem("user");
+        Cookies.remove("user");
       })
       .addCase(logout.rejected, (state, action) => {
         state.loading = false;

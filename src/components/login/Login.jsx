@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { loginUser } from "../../redux/UserSlice";
 import "./login.css";
+import useRefresh from "../../hooks/useRefresh";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -10,9 +11,17 @@ const Login = () => {
   const from = location.state?.from?.pathname || "/";
   const userRef = useRef();
   const errRef = useRef();
+  const refresh = useRefresh();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const onClick = async () => {
+    try {
+      await refresh(); // Now you can call refresh here
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     userRef.current.focus();
@@ -73,6 +82,9 @@ const Login = () => {
           </div>
           <button className="login-button">
             {loading ? "loading..." : "login"}
+          </button>
+          <button onClick={onClick} className="login-button">
+            refresh
           </button>
         </form>
         <p>
